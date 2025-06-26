@@ -1,7 +1,7 @@
 [project]
 name = "banking-transaction-analyzer"
 version = "0.1.0"
-description = """project for analyzing bank transactions
+description = """Project for analyzing bank transactions
                  that are in an Excel file"""
 authors = [
     {name = "Nadezhda_Popova",email = "nadezhdapopova13@yandex.ru"}
@@ -9,6 +9,10 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "requests (>=2.32.4,<3.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "logging (>=0.4.9.6,<0.5.0.0)",
+    "pandas (>=2.3.0,<3.0.0)"
 ]
 
 
@@ -20,6 +24,12 @@ build-backend = "poetry.core.masonry.api"
 flake8 = "^7.3.0"
 mypy = "^1.16.1"
 isort = "^6.0.1"
+black = "^25.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
 
 [tool.mypy]
 disallow_untyped_defs=true
