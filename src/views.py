@@ -2,7 +2,7 @@ from src.utils import get_information_from_json
 
 
 def get_inform_for_home_page(date_str: str) -> None:
-    """Передает JSON-строку"""
+    """Выводит JSON-строку для страницы 'Главная'"""
     information = get_information_from_json(date_str)
 
     print(information)
