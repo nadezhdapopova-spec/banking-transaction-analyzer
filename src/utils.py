@@ -45,7 +45,7 @@ def get_greeting(date_str: str) -> tuple:
         return "Добрый день", int(date_obj.month), int(date_obj.year)
     elif 18 <= date_obj.hour < 24:
         return "Добрый вечер", int(date_obj.month), int(date_obj.year)
-    elif date_obj.hour == 24 or date_obj.hour < 6:
+    else:
         return "Доброй ночи", int(date_obj.month), int(date_obj.year)
 
 
@@ -58,7 +58,7 @@ def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
     cards_info = []
     for key, value in result_dict.items():
         card_info = dict()
-        card_info["last_digits"] = key[-4:]
+        card_info["last_digits"] = str(key)[-4:]
         card_info["total_spent"] = value["Сумма операции"]
         card_info["cashback"] = value["Кэшбэк"]
         cards_info.append(card_info)
@@ -70,10 +70,10 @@ def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает топ-5 транзакций по сумме платежа"""
     top_transactions = transactions_df.sort_values("Сумма операции с округлением", ascending=False).head(5)
 
-    top_transactions = top_transactions.to_dict(orient="index")
+    top_transactions_dict = top_transactions.to_dict(orient="index")
 
     top_five_transactions = []
-    for key, value in top_transactions.items():
+    for key, value in top_transactions_dict.items():
         top_transact = dict()
         top_transact["date"] = value["Дата операции"].strftime("%d.%m.%Y")
         top_transact["amount"] = value["Сумма операции"]
