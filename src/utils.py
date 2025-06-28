@@ -82,3 +82,8 @@ def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
         top_five_transactions.append(top_transact)
 
     return top_five_transactions
+
+
+def get_events_information(date_str: str, data_range: str = "M") -> str:
+    pass
+    return events_information
