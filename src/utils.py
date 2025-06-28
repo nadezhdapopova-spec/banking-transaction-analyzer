@@ -1,6 +1,6 @@
 import json
 import os.path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -11,10 +11,12 @@ from src.read_xlsx import read_transactions_excel
 
 def get_information_from_json(date_str: str) -> str:
     """Создает json-строку"""
-    greeting, month, year = get_greeting(date_str)
+    date_obj, day, month, year = get_date_obj(date_str)
+    greeting = get_greeting(date_obj)
 
     filepath = os.path.join(ROOT_DIR, "data", "operations.xlsx")
-    transactions_df = read_transactions_excel(filepath, month, year)
+    transactions_df = read_transactions_excel(filepath)
+    transactions_df = filter_transactions(transactions_df, day, month, year)
 
     cards_information = get_card_spent_cashback(transactions_df)
 
@@ -36,17 +38,33 @@ def get_information_from_json(date_str: str) -> str:
     return parsed_result
 
 
-def get_greeting(date_str: str) -> tuple:
-    """Возвращает приветствие в зависимости от текущего времени"""
+def get_date_obj(date_str: str) -> tuple:
+    """Возвращает объект datetime из заданной даты"""
     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+
+    return date_obj, int(date_obj.day), int(date_obj.month), int(date_obj.year)
+
+
+def get_greeting(date_obj: datetime) -> str:
+    """Возвращает приветствие в зависимости от текущего времени"""
     if 6 <= date_obj.hour < 12:
-        return "Доброе утро", int(date_obj.month), int(date_obj.year)
+        return "Доброе утро"
     elif 12 <= date_obj.hour < 18:
-        return "Добрый день", int(date_obj.month), int(date_obj.year)
+        return "Добрый день"
     elif 18 <= date_obj.hour < 24:
-        return "Добрый вечер", int(date_obj.month), int(date_obj.year)
+        return "Добрый вечер"
     else:
-        return "Доброй ночи", int(date_obj.month), int(date_obj.year)
+        return "Доброй ночи"
+
+
+def filter_transactions(transactions_df, day, month, year) -> pd.DataFrame:
+    """Функция для считывания финансовых операций из XLSX-файлов"""
+
+    filtered_transactions = transactions_df[(transactions_df["Дата операции"].dt.day <= day) &
+                                            (transactions_df["Дата операции"].dt.month == month) &
+                                            (transactions_df["Дата операции"].dt.year == year)]
+
+    return filtered_transactions
 
 
 def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
@@ -59,7 +77,7 @@ def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
     for key, value in result_dict.items():
         card_info = dict()
         card_info["last_digits"] = str(key)[-4:]
-        card_info["total_spent"] = value["Сумма операции"]
+        card_info["total_spent"] = round(value["Сумма операции"], 2)
         card_info["cashback"] = value["Кэшбэк"]
         cards_info.append(card_info)
 
@@ -84,6 +102,16 @@ def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
     return top_five_transactions
 
 
-def get_events_information(date_str: str, data_range: str = "M") -> str:
-    pass
-    return events_information
+# def get_events_information(date_str: str, data_range: str = "M") -> str:
+#     get_dates(date_str, data_range)
+#
+#     # return parsed_result
+#
+#
+# def get_dates(date_str: str, data_range: str):
+#     date_obj = datetime.strptime(date_str, "%d-%m-%Y")
+#
+#     if data_range == "W":
+#         duration = int(str(datetime.strptime(date_str, "%w")))
+#         start_date = date_obj - timedelta(days=duration)
+#         return start_date

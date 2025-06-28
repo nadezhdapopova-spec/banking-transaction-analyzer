@@ -59,6 +59,7 @@ def get_stock_prices() -> list[dict]:
 
         stock_price["stock"] = stock
         stock_price.update(response)
+        # stock_price["price"] = round(float(stock_price["price"]), 2)
         stock_prices.append(stock_price)
 
     return stock_prices
