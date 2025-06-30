@@ -2,6 +2,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 from pandas._testing import assert_frame_equal
 
 from src.read_xlsx import read_transactions_excel
@@ -23,3 +24,13 @@ def test_read_transactions_excel(mock_read_excel: Any) -> None:
 
     assert_frame_equal(result, expected_df)
     mock_read_excel.assert_called_once_with("fake/path.xlsx")
+
+
+@patch("src.read_xlsx.pd.read_excel")
+def test_read_transactions_excel_file_not_found(mock_read_excel):
+    mock_read_excel.side_effect = FileNotFoundError("Ошибка чтения файла")
+
+    with pytest.raises(FileNotFoundError):
+        read_transactions_excel("nonexistent_file.xlsx")
+
+    mock_read_excel.assert_called_once_with("nonexistent_file.xlsx")
