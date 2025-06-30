@@ -12,12 +12,9 @@ def get_information_home_page(date_str: str,
     date_obj, start_date, end_date = get_date_obj_information(date_str)
     greeting = get_greeting(date_obj)
 
-    transactions_df = filter_transactions(transactions, start_date, end_date)
-
+    transactions_df = filter_transactions(transactions, start_date, end_date, date_obj)
     cards_information = get_card_spent_cashback(transactions_df)
-
     top_five_transactions = get_top_five_transactions(transactions_df)
-
 
     result_dict = {
         "greeting": greeting,
@@ -39,19 +36,19 @@ def get_events_information(date_str: str,
     """Создает json-строку для страницы 'События'."""
     date_obj, start_date, end_date = get_date_obj_information(date_str, data_range)
 
-    transactions_df = filter_transactions(transactions, start_date, end_date)
+    transactions_df = filter_transactions(transactions, start_date, end_date, date_obj)
 
     total_amount_expenses = get_total_expenses(transactions_df)
     top_categories_expenses = get_top_categories_expenses(transactions_df)
     transfers_and_cash_expenses = get_transfers_and_cash_expenses(transactions_df)
-    expenses = {}
+    expenses = dict()
     expenses.update(total_amount_expenses)
     expenses["main"] = top_categories_expenses
     expenses["transfers_and_cash"] = transfers_and_cash_expenses
 
     total_amount_income = get_total_income(transactions_df)
     top_categories_income = get_top_categories_income(transactions_df)
-    income = {}
+    income = dict()
     income.update(total_amount_income)
     income["main"] = top_categories_income
 
@@ -66,7 +63,7 @@ def get_events_information(date_str: str,
     return parsed_result
 
 
-def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple:
+def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[datetime, datetime, datetime]:
     """Возвращает начальную и конечную даты для фильтрации транзакций"""
     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
     end_date = date_obj + timedelta(days=1)
@@ -79,7 +76,7 @@ def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple:
     elif data_range == "Y":
         start_date = date_obj.replace(day=1, month=1)
     else:
-        start_date = 0
+        start_date = date_obj
 
     return date_obj, start_date, end_date
 
@@ -97,10 +94,11 @@ def get_greeting(date_obj: datetime) -> str:
 
 
 def filter_transactions(transactions_df: pd.DataFrame,
-                        start_date: datetime | int,
-                        end_date: datetime) -> pd.DataFrame:
+                        start_date: datetime,
+                        end_date: datetime,
+                        date_obj: datetime) -> pd.DataFrame:
     """Возвращает транзакции, отфильтрованные по дате."""
-    if isinstance(start_date, int):
+    if start_date == date_obj:
         filtered_transactions = transactions_df[(transactions_df["Дата операции"] <= end_date)]
     else:
         filtered_transactions = transactions_df[(transactions_df["Дата операции"] >= start_date) &
@@ -166,8 +164,8 @@ def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
     other_category = result.iloc[7:].sum()
 
-    result = result.reset_index().to_dict(orient="records")
-    categories = [item for item in result[:7]]
+    result_list = result.reset_index().to_dict(orient="records")
+    categories = [item for item in result_list[:7]]
     categories.append({
         "Категория": "Остальное",
         "Сумма операции": float(other_category)})
@@ -195,18 +193,18 @@ def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
 
 def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"])]
-              .groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values())
+                          .groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values())
 
-    if not "Переводы" in transfers_and_cash:
+    if "Переводы" not in transfers_and_cash:
         transfers_and_cash.loc["Переводы"] = 0
-    if not "Наличные" in transfers_and_cash:
+    if "Наличные" not in transfers_and_cash:
         transfers_and_cash.loc["Наличные"] = 0
 
-    transfers_and_cash = transfers_and_cash.reset_index().to_dict(orient="records")
+    transfers_and_cash_list = transfers_and_cash.reset_index().to_dict(orient="records")
 
-    for item in transfers_and_cash:
+    for item in transfers_and_cash_list:
         item["category"] = item.pop("Категория")
         item["amount"] = item.pop("Сумма операции")
         item["amount"] = abs(int(round(float(item["amount"]), 0)))
 
-    return transfers_and_cash
+    return transfers_and_cash_list

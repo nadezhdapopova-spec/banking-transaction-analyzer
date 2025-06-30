@@ -19,15 +19,15 @@ def get_currency_rates() -> list[dict]:
     api_key = os.getenv('API_KEY_twelvedata')
 
     currency_rates = []
-    currency_to = "RUB"
-    for currency in valid_for_conversion:
-        url = f"https://api.twelvedata.com/exchange_rate?symbol={currency}/{currency_to}&apikey={api_key}&source = docs"
+    cur_to = "RUB"
+    for cur in valid_for_conversion:
+        url = f"https://api.twelvedata.com/exchange_rate?symbol={cur}/{cur_to}&apikey={api_key}&source = docs"
         response = requests.get(url).json()
 
         result = round(float(response["rate"]), 2)
 
         currency_rate = dict()
-        currency_rate["currency"] = currency
+        currency_rate["currency"] = cur
         currency_rate["rate"] = result
         currency_rates.append(currency_rate)
 
