@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from src.external_api import get_currency_rates, get_stock_prices
 
-
-def get_information_home_page(date_str: str, transactions: pd.DataFrame) -> str:
+def get_information_home_page(date_str: str,
+                              transactions: pd.DataFrame,
+                              currency_rates: list[dict],
+                              stock_prices: list[dict]) -> str:
     """Создает json-строку для страницы 'Главная'."""
     date_obj, start_date, end_date = get_date_obj_information(date_str)
     greeting = get_greeting(date_obj)
@@ -17,16 +18,13 @@ def get_information_home_page(date_str: str, transactions: pd.DataFrame) -> str:
 
     top_five_transactions = get_top_five_transactions(transactions_df)
 
-    # currency_rates = get_currency_rates()
-    #
-    # stock_prices = get_stock_prices()
 
     result_dict = {
         "greeting": greeting,
         "cards": cards_information,
-        "top_transactions": top_five_transactions
-        # "currency_rates": currency_rates,
-        # "stock_prices": stock_prices
+        "top_transactions": top_five_transactions,
+        "currency_rates": currency_rates,
+        "stock_prices": stock_prices
     }
     parsed_result = json.dumps(str(result_dict), indent=4, ensure_ascii=False)
 
@@ -35,6 +33,8 @@ def get_information_home_page(date_str: str, transactions: pd.DataFrame) -> str:
 
 def get_events_information(date_str: str,
                            transactions: pd.DataFrame,
+                           currency_rates: list[dict],
+                           stock_prices: list[dict],
                            data_range: str = "M") -> str:
     """Создает json-строку для страницы 'События'."""
     date_obj, start_date, end_date = get_date_obj_information(date_str, data_range)
@@ -42,17 +42,27 @@ def get_events_information(date_str: str,
     transactions_df = filter_transactions(transactions, start_date, end_date)
 
     total_amount_expenses = get_total_expenses(transactions_df)
-
     top_categories_expenses = get_top_categories_expenses(transactions_df)
-
     transfers_and_cash_expenses = get_transfers_and_cash_expenses(transactions_df)
-
     expenses = {}
     expenses.update(total_amount_expenses)
     expenses["main"] = top_categories_expenses
+    expenses["transfers_and_cash"] = transfers_and_cash_expenses
 
-    parsed_result = json.dumps(str(expenses), indent=4, ensure_ascii=False)
+    total_amount_income = get_total_income(transactions_df)
+    top_categories_income = get_top_categories_income(transactions_df)
+    income = {}
+    income.update(total_amount_income)
+    income["main"] = top_categories_income
 
+    result = {
+        "expenses": expenses,
+        "income": income,
+        "currency_rates": currency_rates,
+        "stock_prices": stock_prices
+    }
+
+    parsed_result = json.dumps(str(result), indent=4, ensure_ascii=False)
     return parsed_result
 
 
@@ -143,6 +153,15 @@ def get_total_expenses(transactions_df: pd.DataFrame) -> dict:
     return total_expenses
 
 
+def get_total_income(transactions_df: pd.DataFrame) -> dict:
+    """Возвращает общую сумму поступлений."""
+    total_amount = transactions_df[transactions_df["Сумма операции"] > 0]["Сумма операции"].sum()
+
+    total_income = {"total_amount": int(round(float(total_amount), 0))}
+
+    return total_income
+
+
 def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
     other_category = result.iloc[7:].sum()
@@ -156,7 +175,20 @@ def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     for item in categories:
         item["category"] = item.pop("Категория")
         item["amount"] = item.pop("Сумма операции")
-        item["amount"] = abs(item["amount"])
+        item["amount"] = abs(int(round(float(item["amount"]), 0)))
+
+    return categories
+
+
+def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
+    result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x > 0].sort_values()
+
+    categories = result.reset_index().to_dict(orient="records")
+
+    for item in categories:
+        item["category"] = item.pop("Категория")
+        item["amount"] = item.pop("Сумма операции")
+        item["amount"] = int(round(float(item["amount"]), 0))
 
     return categories
 
@@ -165,17 +197,16 @@ def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]
     transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"])]
               .groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values())
 
-    # if not transfers_and_cash["Категория"].isin(["Переводы"]):
-    #
+    if not "Переводы" in transfers_and_cash:
+        transfers_and_cash.loc["Переводы"] = 0
+    if not "Наличные" in transfers_and_cash:
+        transfers_and_cash.loc["Наличные"] = 0
 
     transfers_and_cash = transfers_and_cash.reset_index().to_dict(orient="records")
 
     for item in transfers_and_cash:
         item["category"] = item.pop("Категория")
         item["amount"] = item.pop("Сумма операции")
-        item["amount"] = abs(item["amount"])
-
-
-    print(transfers_and_cash)
+        item["amount"] = abs(int(round(float(item["amount"]), 0)))
 
     return transfers_and_cash

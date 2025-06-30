@@ -15,24 +15,18 @@ def get_currency_rates() -> list[dict]:
 
     valid_for_conversion = data["user_currencies"]
 
+    load_dotenv()
+    api_key = os.getenv('API_KEY_twelvedata')
+
     currency_rates = []
+    currency_to = "RUB"
     for currency in valid_for_conversion:
-        currency_rate = {}
-        cur_to = "RUB"
-        cur_from = currency
-        amount = 1
-        url = f"https://api.apilayer.com/exchangerates_data/convert?to={cur_to}&from={cur_from}&amount={amount}"
+        url = f"https://api.twelvedata.com/exchange_rate?symbol={currency}/{currency_to}&apikey={api_key}&source = docs"
+        response = requests.get(url).json()
 
-        load_dotenv()
-        api_key = os.getenv('API_KEY_apilayer')
-        headers = {
-            "apikey": api_key
-        }
+        result = round(float(response["rate"]), 2)
 
-        response = requests.get(url, headers=headers).json()
-
-        result = round(response["result"], 2)
-
+        currency_rate = dict()
         currency_rate["currency"] = currency
         currency_rate["rate"] = result
         currency_rates.append(currency_rate)
@@ -48,18 +42,18 @@ def get_stock_prices() -> list[dict]:
 
     valid_stocks = data["user_stocks"]
 
+    load_dotenv()
+    api_key = os.getenv('API_KEY_twelvedata')
+
     stock_prices = []
     for stock in valid_stocks:
-        stock_price = {}
-        load_dotenv()
-        api_key = os.getenv('API_KEY_twelvedata')
         url = f"https://api.twelvedata.com/price?symbol={stock}&apikey={api_key}&source=docs"
-
         response = requests.get(url).json()
 
+        stock_price = dict()
         stock_price["stock"] = stock
         stock_price.update(response)
-        # stock_price["price"] = round(float(stock_price["price"]), 2)
+        stock_price["price"] = round(float(stock_price["price"]), 2)
         stock_prices.append(stock_price)
 
     return stock_prices
