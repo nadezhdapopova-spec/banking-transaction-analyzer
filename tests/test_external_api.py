@@ -35,7 +35,7 @@ def test_get_currency_rates(mock_open_file: Any,
 
 
 @patch("builtins.open", side_effect = FileNotFoundError("Ошибка чтения файла"))
-def test_get_currency_rates_file_not_found(mock_open_file):
+def test_get_currency_rates_file_not_found(mock_open_file: Any) -> None:
     with pytest.raises(FileNotFoundError):
         get_currency_rates()
 
@@ -71,7 +71,7 @@ def test_get_stock_prices(mock_open_file: Any,
 
 
 @patch("builtins.open", side_effect = FileNotFoundError("Ошибка чтения файла"))
-def test_get_stock_prices_file_not_found(mock_open_file):
+def test_get_stock_prices_file_not_found(mock_open_file: Any) -> None:
     with pytest.raises(FileNotFoundError):
         get_currency_rates()
 

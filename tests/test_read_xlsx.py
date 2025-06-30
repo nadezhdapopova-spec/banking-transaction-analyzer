@@ -27,7 +27,7 @@ def test_read_transactions_excel(mock_read_excel: Any) -> None:
 
 
 @patch("src.read_xlsx.pd.read_excel")
-def test_read_transactions_excel_file_not_found(mock_read_excel):
+def test_read_transactions_excel_file_not_found(mock_read_excel: Any) -> None:
     mock_read_excel.side_effect = FileNotFoundError("Ошибка чтения файла")
 
     with pytest.raises(FileNotFoundError):

@@ -23,7 +23,7 @@ def get_information_home_page(date_str: str,
         "currency_rates": currency_rates,
         "stock_prices": stock_prices
     }
-    parsed_result = json.dumps(str(result_dict), indent=4, ensure_ascii=False)
+    parsed_result = json.dumps(result_dict, indent=4, ensure_ascii=False)
 
     return parsed_result
 
@@ -59,7 +59,7 @@ def get_events_information(date_str: str,
         "stock_prices": stock_prices
     }
 
-    parsed_result = json.dumps(str(result), indent=4, ensure_ascii=False)
+    parsed_result = json.dumps(result, indent=4, ensure_ascii=False)
     return parsed_result
 
 
@@ -161,6 +161,7 @@ def get_total_income(transactions_df: pd.DataFrame) -> dict:
 
 
 def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
+    """Возвращает сумму расходов по 8 категориям."""
     result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
     other_category = result.iloc[7:].sum()
 
@@ -179,6 +180,7 @@ def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
 
 
 def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
+    """Возвращает сумму поступлений по категориям."""
     result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x > 0].sort_values()
 
     categories = result.reset_index().to_dict(orient="records")
@@ -192,6 +194,7 @@ def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
 
 
 def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]:
+    """Возвращает сумму расходов по категориям 'Наличные' и 'Переводы'."""
     transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"])]
                           .groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values())
 
