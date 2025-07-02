@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import patch, Mock, mock_open
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 import requests
@@ -35,7 +35,7 @@ def test_get_currency_rates(mock_open_file: Any,
     assert result == expected
 
 
-@patch("builtins.open", side_effect = FileNotFoundError("Ошибка чтения файла"))
+@patch("builtins.open", side_effect=FileNotFoundError("Ошибка чтения файла"))
 def test_get_currency_rates_file_not_found(mock_open_file: Any) -> None:
     with pytest.raises(FileNotFoundError):
         get_currency_rates()
@@ -90,7 +90,7 @@ def test_get_stock_prices(mock_open_file: Any,
     assert result == expected
 
 
-@patch("builtins.open", side_effect = FileNotFoundError("Ошибка чтения файла"))
+@patch("builtins.open", side_effect=FileNotFoundError("Ошибка чтения файла"))
 def test_get_stock_prices_file_not_found(mock_open_file: Any) -> None:
     with pytest.raises(FileNotFoundError):
         get_stock_prices()

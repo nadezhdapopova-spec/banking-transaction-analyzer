@@ -230,8 +230,8 @@ def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]
     """Возвращает сумму расходов по категориям 'Наличные' и 'Переводы'."""
     try:
         transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"]) &
-                             (transactions_df["Сумма операции"] < 0)].groupby("Категория")["Сумма операции"].
-                              sum().sort_values())
+                                              (transactions_df["Сумма операции"] < 0)].
+                              groupby("Категория")["Сумма операции"].sum().sort_values())
 
         if "Переводы" not in transfers_and_cash:
             transfers_and_cash.loc["Переводы"] = 0

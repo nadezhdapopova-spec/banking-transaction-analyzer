@@ -1,14 +1,25 @@
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Sequence
 from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
-from src.utils import get_information_home_page, get_events_information, get_date_obj_information, get_greeting, \
-    filter_transactions, get_card_spent_cashback, get_top_five_transactions, get_total_expenses, get_total_income, \
-    get_top_categories_expenses, get_top_categories_income, get_transfers_and_cash_expenses
+from src.utils import (
+    filter_transactions,
+    get_card_spent_cashback,
+    get_date_obj_information,
+    get_events_information,
+    get_greeting,
+    get_information_home_page,
+    get_top_categories_expenses,
+    get_top_categories_income,
+    get_top_five_transactions,
+    get_total_expenses,
+    get_total_income,
+    get_transfers_and_cash_expenses
+)
 
 
 @patch("src.utils.get_top_five_transactions")
@@ -167,7 +178,7 @@ def test_get_date_obj_information_invalid() -> None:
     ((2023, 1, 1, 18, 0), "Добрый вечер"),
     ((2023, 1, 2, 0, 0), "Доброй ночи"),
 ])
-def test_get_greeting(date: tuple[int], expected: str) -> None:
+def test_get_greeting(date: tuple[int, int, int, int, int], expected: str) -> None:
     date_obj = datetime(*date)
     assert get_greeting(date_obj) == expected
 
@@ -207,11 +218,11 @@ def test_filter_transactions() -> None:
     result = filter_transactions(transactions, start_date, end_date, date_obj)
     expected = [
         {"Дата операции": pd.Timestamp("2023-02-02 00:00:00"),
-        "Сумма": 1000,
-        "Кэшбэк": 0},
+         "Сумма": 1000,
+         "Кэшбэк": 0},
         {"Дата операции": pd.Timestamp("2023-01-01 00:00:00"),
-        "Сумма": 2000,
-        "Кэшбэк": 0}
+         "Сумма": 2000,
+         "Кэшбэк": 0}
     ]
 
     assert result.to_dict(orient="records") == expected
@@ -314,14 +325,14 @@ def test_get_top_categories_expenses_invalid(filtered_transactions_invalid: pd.D
 
 
 def test_get_top_categories_income(filtered_transactions: pd.DataFrame) -> None:
-     result = get_top_categories_income(filtered_transactions)
+    result = get_top_categories_income(filtered_transactions)
 
-     expected = [
+    expected = [
          {"category": "Переводы", "amount": 1000},
          {"category": "Пополнения", "amount": 100}
-     ]
+    ]
 
-     assert result == expected
+    assert result == expected
 
 
 def test_get_top_categories_income_invalid(filtered_transactions_invalid: pd.DataFrame) -> None:
