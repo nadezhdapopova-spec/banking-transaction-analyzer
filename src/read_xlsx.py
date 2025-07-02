@@ -14,3 +14,6 @@ def read_transactions_excel(filepath: str) -> pd.DataFrame:
 
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Ошибка чтения файла: {e}.")
+
+    except StopIteration as e:
+        raise StopIteration(f"Ошибка чтения файла: {e}.")

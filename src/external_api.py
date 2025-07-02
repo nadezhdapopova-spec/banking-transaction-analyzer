@@ -37,6 +37,11 @@ def get_currency_rates() -> list[dict]:
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Ошибка чтения файла: {e}.")
 
+    except requests.exceptions.RequestException as e:
+        print("Ошибка запроса к API:", e)
+        return []
+
+
 def get_stock_prices() -> list[dict]:
     """Получает данные о cтоимости заданных акций из S&P500 в рублях."""
     try:
@@ -64,3 +69,7 @@ def get_stock_prices() -> list[dict]:
 
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Ошибка чтения файла: {e}.")
+
+    except requests.exceptions.RequestException as e:
+        print("Ошибка запроса к API:", e)
+        return []

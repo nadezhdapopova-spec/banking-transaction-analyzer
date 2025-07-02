@@ -34,3 +34,13 @@ def test_read_transactions_excel_file_not_found(mock_read_excel: Any) -> None:
         read_transactions_excel("nonexistent_file.xlsx")
 
     mock_read_excel.assert_called_once_with("nonexistent_file.xlsx")
+
+
+@patch("src.read_xlsx.pd.read_excel")
+def test_read_transactions_excel_empty(mock_read_excel: Any) -> None:
+    mock_read_excel.side_effect = StopIteration("Ошибка чтения файла")
+
+    with pytest.raises(StopIteration):
+        read_transactions_excel("empty_file.xlsx")
+
+    mock_read_excel.assert_called_once_with("empty_file.xlsx")

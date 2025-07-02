@@ -65,20 +65,24 @@ def get_events_information(date_str: str,
 
 def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[datetime, datetime, datetime]:
     """Возвращает начальную и конечную даты для фильтрации транзакций"""
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    end_date = date_obj + timedelta(days=1)
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        end_date = date_obj + timedelta(days=1)
 
-    if data_range == "W":
-        duration = int(datetime.strftime(date_obj, "%w"))
-        start_date = date_obj - timedelta(days=duration)
-    elif data_range == "M":
-        start_date = date_obj.replace(day=1)
-    elif data_range == "Y":
-        start_date = date_obj.replace(day=1, month=1)
-    else:
-        start_date = date_obj
+        if data_range == "W":
+            duration = int(datetime.strftime(date_obj, "%w"))
+            start_date = date_obj - timedelta(days=duration-1)
+        elif data_range == "M":
+            start_date = date_obj.replace(day=1)
+        elif data_range == "Y":
+            start_date = date_obj.replace(day=1, month=1)
+        else:
+            start_date = date_obj
 
-    return date_obj, start_date, end_date
+        return date_obj, start_date, end_date
+
+    except ValueError:
+        raise ValueError("Некорректный формат даты.")
 
 
 def get_greeting(date_obj: datetime) -> str:
@@ -98,116 +102,150 @@ def filter_transactions(transactions_df: pd.DataFrame,
                         end_date: datetime,
                         date_obj: datetime) -> pd.DataFrame:
     """Возвращает транзакции, отфильтрованные по дате."""
-    if start_date == date_obj:
-        filtered_transactions = transactions_df[(transactions_df["Дата операции"] <= end_date)]
-    else:
-        filtered_transactions = transactions_df[(transactions_df["Дата операции"] >= start_date) &
-                                                (transactions_df["Дата операции"] <= end_date)]
+    try:
+        if start_date == date_obj:
+            filtered_transactions = transactions_df[(transactions_df["Дата операции"] <= end_date)]
+        else:
+            filtered_transactions = transactions_df[(transactions_df["Дата операции"] >= start_date) &
+                                                    (transactions_df["Дата операции"] <= end_date)]
 
-    return filtered_transactions
+        return filtered_transactions
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает общую сумму расходов, кешбэк по каждой карте."""
-    result = transactions_df.groupby("Номер карты").agg({"Сумма операции": "sum", "Кэшбэк": "sum"})
+    try:
+        result = transactions_df.groupby("Номер карты").agg({"Сумма операции": "sum", "Кэшбэк": "sum"})
 
-    result_dict = result.to_dict(orient="index")
+        result_dict = result.to_dict(orient="index")
 
-    cards_info = []
-    for key, value in result_dict.items():
-        card_info = dict()
-        card_info["last_digits"] = str(key)[-4:]
-        card_info["total_spent"] = abs(round(value["Сумма операции"], 2))
-        card_info["cashback"] = value["Кэшбэк"]
-        cards_info.append(card_info)
+        cards_info = []
+        for key, value in result_dict.items():
+            card_info = dict()
+            card_info["last_digits"] = str(key)[-4:]
+            card_info["total_spent"] = abs(round(value["Сумма операции"], 2))
+            card_info["cashback"] = value["Кэшбэк"]
+            cards_info.append(card_info)
 
-    return cards_info
+        return cards_info
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает топ-5 транзакций по сумме платежа."""
-    top_transactions = transactions_df.sort_values("Сумма операции с округлением", ascending=False).head(5)
+    try:
+        top_transactions = transactions_df.sort_values("Сумма операции с округлением", ascending=False).head(5)
 
-    top_transactions_dict = top_transactions.to_dict(orient="index")
+        top_transactions_dict = top_transactions.to_dict(orient="index")
 
-    top_five_transactions = []
-    for key, value in top_transactions_dict.items():
-        top_transact = dict()
-        top_transact["date"] = value["Дата операции"].strftime("%d.%m.%Y")
-        top_transact["amount"] = abs(value["Сумма операции"])
-        top_transact["category"] = value["Категория"]
-        top_transact["description"] = value["Описание"]
-        top_five_transactions.append(top_transact)
+        top_five_transactions = []
+        for key, value in top_transactions_dict.items():
+            top_transact = dict()
+            top_transact["date"] = value["Дата операции"].strftime("%d.%m.%Y")
+            top_transact["amount"] = abs(value["Сумма операции"])
+            top_transact["category"] = value["Категория"]
+            top_transact["description"] = value["Описание"]
+            top_five_transactions.append(top_transact)
 
-    return top_five_transactions
+        return top_five_transactions
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_total_expenses(transactions_df: pd.DataFrame) -> dict:
     """Возвращает общую сумму расходов."""
-    total_amount = transactions_df[transactions_df["Сумма операции"] < 0]["Сумма операции"].sum()
+    try:
+        total_amount = transactions_df[transactions_df["Сумма операции"] < 0]["Сумма операции"].sum()
 
-    total_expenses = {"total_amount": abs(int(round(float(total_amount), 0)))}
+        total_expenses = {"total_amount": abs(int(round(float(total_amount), 0)))}
 
-    return total_expenses
+        return total_expenses
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_total_income(transactions_df: pd.DataFrame) -> dict:
     """Возвращает общую сумму поступлений."""
-    total_amount = transactions_df[transactions_df["Сумма операции"] > 0]["Сумма операции"].sum()
+    try:
+        total_amount = transactions_df[transactions_df["Сумма операции"] > 0]["Сумма операции"].sum()
 
-    total_income = {"total_amount": int(round(float(total_amount), 0))}
+        total_income = {"total_amount": int(round(float(total_amount), 0))}
 
-    return total_income
+        return total_income
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает сумму расходов по 8 категориям."""
-    result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
-    other_category = result.iloc[7:].sum()
+    try:
+        result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
+        other_category = result.iloc[7:].sum()
 
-    result_list = result.reset_index().to_dict(orient="records")
-    categories = [item for item in result_list[:7]]
-    categories.append({
-        "Категория": "Остальное",
-        "Сумма операции": float(other_category)})
+        result_list = result.reset_index().to_dict(orient="records")
+        categories = [item for item in result_list[:7]]
+        categories.append({
+            "Категория": "Остальное",
+            "Сумма операции": float(other_category)})
 
-    for item in categories:
-        item["category"] = item.pop("Категория")
-        item["amount"] = item.pop("Сумма операции")
-        item["amount"] = abs(int(round(float(item["amount"]), 0)))
+        for item in categories:
+            item["category"] = item.pop("Категория")
+            item["amount"] = item.pop("Сумма операции")
+            item["amount"] = abs(int(round(float(item["amount"]), 0)))
 
-    return categories
+        return categories
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает сумму поступлений по категориям."""
-    result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x > 0].sort_values()
+    try:
+        result = (transactions_df[transactions_df["Сумма операции"] > 0].
+                  groupby("Категория")["Сумма операции"].sum().sort_values(ascending=False))
 
-    categories = result.reset_index().to_dict(orient="records")
+        categories = result.reset_index().to_dict(orient="records")
 
-    for item in categories:
-        item["category"] = item.pop("Категория")
-        item["amount"] = item.pop("Сумма операции")
-        item["amount"] = int(round(float(item["amount"]), 0))
+        for item in categories:
+            item["category"] = item.pop("Категория")
+            item["amount"] = item.pop("Сумма операции")
+            item["amount"] = int(round(float(item["amount"]), 0))
 
-    return categories
+        return categories
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
 
 
 def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает сумму расходов по категориям 'Наличные' и 'Переводы'."""
-    transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"])]
-                          .groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values())
+    try:
+        transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"]) &
+                             (transactions_df["Сумма операции"] < 0)].groupby("Категория")["Сумма операции"].
+                              sum().sort_values())
 
-    if "Переводы" not in transfers_and_cash:
-        transfers_and_cash.loc["Переводы"] = 0
-    if "Наличные" not in transfers_and_cash:
-        transfers_and_cash.loc["Наличные"] = 0
+        if "Переводы" not in transfers_and_cash:
+            transfers_and_cash.loc["Переводы"] = 0
+        if "Наличные" not in transfers_and_cash:
+            transfers_and_cash.loc["Наличные"] = 0
 
-    transfers_and_cash_list = transfers_and_cash.reset_index().to_dict(orient="records")
+        transfers_and_cash_list = transfers_and_cash.reset_index().to_dict(orient="records")
 
-    for item in transfers_and_cash_list:
-        item["category"] = item.pop("Категория")
-        item["amount"] = item.pop("Сумма операции")
-        item["amount"] = abs(int(round(float(item["amount"]), 0)))
+        for item in transfers_and_cash_list:
+            item["category"] = item.pop("Категория")
+            item["amount"] = item.pop("Сумма операции")
+            item["amount"] = abs(int(round(float(item["amount"]), 0)))
 
-    return transfers_and_cash_list
+        return transfers_and_cash_list
+
+    except KeyError as e:
+        raise KeyError(f"Ошибка: {e}")
