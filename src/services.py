@@ -9,6 +9,7 @@ from src.read_xlsx import read_transactions_excel
 
 
 def get_transactions_list() -> list[dict]:
+    """Считывает финансовые операции из XLSX-файла и возвращает в виде списка."""
     try:
         filepath = os.path.join(ROOT_DIR, "data", "operations.xlsx")
         transactions_df = read_transactions_excel(filepath)
@@ -24,6 +25,7 @@ def get_transactions_list() -> list[dict]:
 
 
 def get_profitable_cashback_categories(data: list[dict], month: int, year: int) -> str:
+    """Возвращает JSON-ответ с анализом категорий кэшбэка за указанный период."""
     try:
         transactions_df = pd.DataFrame.from_records(data)
 
@@ -44,22 +46,26 @@ def get_profitable_cashback_categories(data: list[dict], month: int, year: int) 
         raise KeyError(f"Ошибка: {e}")
 
 
-def make_simple_search(search_str: str) -> str:
+def make_simple_search(search_str: str) -> str | None:
+    """Возвращает JSON-ответ со всеми транзакциями, содержащими запрос в описании или категории."""
     try:
         transactions = get_transactions_list()
 
         pattern = re.compile(search_str, re.IGNORECASE)
 
         target_transactions = [transact for transact in transactions
-                               if any(pattern.search(str(value)) for value in transact.values())]
+                               if pattern.search(str(transact.get("Описание", "")))
+                               or pattern.search(str(transact.get("Категория", "")))]
 
         return json.dumps(target_transactions, ensure_ascii=False, indent=4, default=str)
 
     except Exception as e:
         print(f"Ошибка {e}. Введены не корректные данные")
+        return None
 
 
 def search_for_transfers_to_individuals(data: list[dict]) -> str:
+    """Возвращает JSON-ответ со всеми транзакциями, которые относятся к переводам физлицам."""
     try:
         transactions_df = pd.DataFrame.from_records(data)
 
