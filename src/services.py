@@ -17,11 +17,8 @@ def get_transactions_list() -> list[dict]:
 
         return transactions_list
 
-    except FileNotFoundError as e:
-        raise FileNotFoundError(f"Ошибка чтения файла: {e}.")
-
-    except StopIteration as e:
-        raise StopIteration(f"Ошибка чтения файла: {e}.")
+    except AttributeError as e:
+        raise AttributeError(f"Ошибка: {e}.")
 
 
 def get_profitable_cashback_categories(data: list[dict], month: int, year: int) -> str:
@@ -48,20 +45,15 @@ def get_profitable_cashback_categories(data: list[dict], month: int, year: int) 
 
 def make_simple_search(search_str: str) -> str | None:
     """Возвращает JSON-ответ со всеми транзакциями, содержащими запрос в описании или категории."""
-    try:
-        transactions = get_transactions_list()
+    transactions = get_transactions_list()
 
-        pattern = re.compile(search_str, re.IGNORECASE)
+    pattern = re.compile(search_str, re.IGNORECASE)
 
-        target_transactions = [transact for transact in transactions
-                               if pattern.search(str(transact.get("Описание", "")))
-                               or pattern.search(str(transact.get("Категория", "")))]
+    target_transactions = [transact for transact in transactions
+                           if pattern.search(str(transact.get("Описание", "")))
+                           or pattern.search(str(transact.get("Категория", "")))]
 
-        return json.dumps(target_transactions, ensure_ascii=False, indent=4, default=str)
-
-    except Exception as e:
-        print(f"Ошибка {e}. Введены не корректные данные")
-        return None
+    return json.dumps(target_transactions, ensure_ascii=False, indent=4, default=str)
 
 
 def search_for_transfers_to_individuals(data: list[dict]) -> str:
