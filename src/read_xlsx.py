@@ -2,7 +2,7 @@ import pandas as pd
 
 
 def read_transactions_excel(filepath: str) -> pd.DataFrame:
-    """Функция для считывания финансовых операций из XLSX-файлов"""
+    """Считывает финансовые операции из XLSX-файла"""
     try:
         # reading_csv_excel_logger.info(f"Чтение XLSX-файла {filepath}.")
         transactions_df = pd.read_excel(filepath)

@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Sequence
+from typing import Any
 from unittest.mock import patch
 
 import pandas as pd
