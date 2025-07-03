@@ -23,7 +23,7 @@ def main() -> None:
 
     filepath = os.path.join(ROOT_DIR, "data", "operations.xlsx")
     transactions = read_transactions_excel(filepath)
-    spending_by_category = get_spending_by_category(transactions, "category", "2021-12-30 22:39:04")
+    spending_by_category = get_spending_by_category(transactions, "Связь", "2021-12-30 22:39:04")
 
     print(home_page_inform)
     print(events_inform)
