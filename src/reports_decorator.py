@@ -9,7 +9,7 @@ def report(filename: Optional[str] = None) -> Any:
     """Декоратор для записи репорта работы функции в файл."""
     def wrapper(func: Callable) -> Callable:
         @wraps(func)
-        def inner(*args, **kwargs) -> Any:
+        def inner(*args: Any, **kwargs: Any) -> Any:
             path = filename or os.path.join(ROOT_DIR, "data", "report.txt")
             with open(path, "w", encoding="utf-8") as file:
                 try:
