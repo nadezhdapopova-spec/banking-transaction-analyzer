@@ -64,7 +64,7 @@ def get_events_information(date_str: str,
 
 
 def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[datetime, datetime, datetime]:
-    """Возвращает начальную и конечную даты для фильтрации транзакций"""
+    """Возвращает начальную и конечную даты для фильтрации транзакций."""
     try:
         date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
         end_date = date_obj + timedelta(days=1)
@@ -81,8 +81,8 @@ def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[date
 
         return date_obj, start_date, end_date
 
-    except ValueError:
-        raise ValueError("Некорректный формат даты.")
+    except ValueError as e:
+        raise ValueError(f"Некорректный формат даты: {e}")
 
 
 def get_greeting(date_obj: datetime) -> str:
@@ -107,7 +107,7 @@ def filter_transactions(transactions_df: pd.DataFrame,
             filtered_transactions = transactions_df[(transactions_df["Дата операции"] <= end_date)]
         else:
             filtered_transactions = transactions_df[(transactions_df["Дата операции"] >= start_date) &
-                                                    (transactions_df["Дата операции"] <= end_date)]
+                                                    (transactions_df["Дата операции"] < end_date)]
 
         return filtered_transactions
 

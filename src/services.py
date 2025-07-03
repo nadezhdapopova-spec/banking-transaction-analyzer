@@ -53,6 +53,10 @@ def make_simple_search(search_str: str) -> str:
                            if pattern.search(str(transact.get("Описание", "")))
                            or pattern.search(str(transact.get("Категория", "")))]
 
+    for item in target_transactions:
+        item["Кэшбэк"] = 0 if pd.isna(item.get("Кэшбэк")) else item["Кэшбэк"]
+        item["MCC"] = None if pd.isna(item.get("MCC")) else item["MCC"]
+
     return json.dumps(target_transactions, ensure_ascii=False, indent=4, default=str)
 
 
@@ -67,6 +71,9 @@ def search_for_transfers_to_individuals(data: list[dict]) -> str:
                                                 (transactions_df["Описание"].str.contains(pattern))]
 
         transfers_to_individuals = filtered_transactions.to_dict(orient="records")
+        for item in transfers_to_individuals:
+            item["Кэшбэк"] = 0 if pd.isna(item.get("Кэшбэк")) else item["Кэшбэк"]
+            item["MCC"] = None if pd.isna(item.get("MCC")) else item["MCC"]
 
         return json.dumps(transfers_to_individuals, ensure_ascii=False, indent=4, default=str)
 
