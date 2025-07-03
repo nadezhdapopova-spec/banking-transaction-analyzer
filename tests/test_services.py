@@ -5,8 +5,12 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from src.services import get_transactions_list, get_profitable_cashback_categories, make_simple_search, \
+from src.services import (
+    get_profitable_cashback_categories,
+    get_transactions_list,
+    make_simple_search,
     search_for_transfers_to_individuals
+)
 
 
 @patch("src.services.read_transactions_excel")
@@ -61,7 +65,7 @@ def test_get_profitable_cashback_categories_invalid(filtered_transactions_invali
 
 
 @patch("src.services.get_transactions_list")
-def test_make_simple_search(mock_get_list, filtered_transactions_list) -> None:
+def test_make_simple_search(mock_get_list: Any, filtered_transactions_list: list[dict]) -> None:
     mock_get_list.return_value = filtered_transactions_list
 
     result = make_simple_search("Тинькофф")
@@ -86,22 +90,22 @@ def test_search_for_transfers_to_individuals(filtered_transactions_list: list[di
 
     expected_result = [
         {
-        "Дата операции": "2023-02-02 00:00:00",
-        "Номер карты": "*4556",
-        "Сумма операции": 1000.0,
-        "Кэшбэк": 0,
-        "Сумма операции с округлением": 1000,
-        "Категория": "Переводы",
-        "Описание": "Дмитрий Р."
-    },
+            "Дата операции": "2023-02-02 00:00:00",
+            "Номер карты": "*4556",
+            "Сумма операции": 1000.0,
+            "Кэшбэк": 0,
+            "Сумма операции с округлением": 1000,
+            "Категория": "Переводы",
+            "Описание": "Дмитрий Р."
+        },
         {
-        "Дата операции": "2023-02-04 00:00:00",
-        "Номер карты": "*4556",
-        "Сумма операции": -300.0,
-        "Кэшбэк": 0,
-        "Сумма операции с округлением": 300,
-        "Категория": "Переводы",
-        "Описание": "Андрей Х."
+            "Дата операции": "2023-02-04 00:00:00",
+            "Номер карты": "*4556",
+            "Сумма операции": -300.0,
+            "Кэшбэк": 0,
+            "Сумма операции с округлением": 300,
+            "Категория": "Переводы",
+            "Описание": "Андрей Х."
         }
     ]
 

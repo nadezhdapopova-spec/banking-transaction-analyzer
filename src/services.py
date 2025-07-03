@@ -43,7 +43,7 @@ def get_profitable_cashback_categories(data: list[dict], month: int, year: int) 
         raise KeyError(f"Ошибка: {e}")
 
 
-def make_simple_search(search_str: str) -> str | None:
+def make_simple_search(search_str: str) -> str:
     """Возвращает JSON-ответ со всеми транзакциями, содержащими запрос в описании или категории."""
     transactions = get_transactions_list()
 
