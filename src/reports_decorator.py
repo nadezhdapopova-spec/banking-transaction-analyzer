@@ -14,8 +14,8 @@ def report(filename: Optional[str] = None) -> Any:
             with open(path, "w", encoding="utf-8") as file:
                 try:
                     result = func(*args, **kwargs)
-                    log = (f"Function {func.__name__} ok"
-                           f"\nFunction {func.__name__} called with args:\n {args} \nand kwargs: {kwargs}. "
+                    log = (f"Function {func.__name__} ok" +
+                           f"\nFunction {func.__name__} called with args:\n {args} \nand kwargs: {kwargs}. " +
                            f"\nResult: {result}")
                     file.write(log)
                     return result
