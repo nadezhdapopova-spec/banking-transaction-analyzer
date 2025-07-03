@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from tabnanny import NannyNag
 from typing import Any
 from unittest.mock import patch
 
@@ -9,7 +8,7 @@ import pytest
 from dateutil.relativedelta import relativedelta
 from pandas import Timestamp
 
-from src.reports import get_spending_by_category, get_date_information, get_filtered_transactions
+from src.reports import get_date_information, get_filtered_transactions, get_spending_by_category
 
 
 @patch("src.reports.get_filtered_transactions")
@@ -94,7 +93,7 @@ def test_get_date_information_invalid() -> None:
         get_date_information("2023-12-31T02:26:18.671407")
 
 
-def test_get_filtered_transactions(filtered_transactions) -> None:
+def test_get_filtered_transactions(filtered_transactions: pd.DataFrame) -> None:
     start_date = datetime(2023, 1, 1, 22, 39, 4)
     end_date = datetime(2023, 3, 15, 22, 39, 4)
     category = "Детские товары"
@@ -114,7 +113,7 @@ def test_get_filtered_transactions(filtered_transactions) -> None:
     assert result.to_dict(orient="records") == expected
 
 
-def test_get_filtered_transactions_invalid(filtered_transactions_invalid) -> None:
+def test_get_filtered_transactions_invalid(filtered_transactions_invalid: pd.DataFrame) -> None:
     start_date = datetime(2023, 1, 1, 22, 39, 4)
     end_date = datetime(2023, 3, 15, 22, 39, 4)
     category = "Детские товары"
