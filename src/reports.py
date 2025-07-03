@@ -1,11 +1,17 @@
 import json
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
+from config import ROOT_DIR
+from src.reports_decorator import report
 
+
+# @report()
+@report(filename=os.path.join(ROOT_DIR, "data", "reports.txt"))
 def get_spending_by_category(transactions: pd.DataFrame,
                              category: str,
                              date_str: Optional[str] = None) -> str:
@@ -22,7 +28,7 @@ def get_spending_by_category(transactions: pd.DataFrame,
     return json.dumps(filtered_transactions_dict, ensure_ascii=False, indent=4, default=str)
 
 
-def get_date_information(date_str: str | None) -> tuple[datetime, datetime]:
+def get_date_information(date_str: Optional[str] = None) -> tuple[datetime, datetime]:
     """Возвращает начальную и конечную даты для фильтрации транзакций."""
     if not date_str:
         date_obj = datetime.now()

@@ -176,3 +176,6 @@ cython_debug/
 .pypirc
 
 ~$*.xlsx
+
+data/report.txt
+data/reports.txt
