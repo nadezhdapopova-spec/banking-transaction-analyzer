@@ -81,8 +81,8 @@ def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[date
 
         return date_obj, start_date, end_date
 
-    except ValueError:
-        raise ValueError("Некорректный формат даты.")
+    except ValueError as e:
+        raise ValueError(f"Некорректный формат даты: {e}")
 
 
 def get_greeting(date_obj: datetime) -> str:
