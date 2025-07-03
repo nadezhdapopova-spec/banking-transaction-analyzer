@@ -5,6 +5,7 @@ import pytest
 from config import ROOT_DIR
 from src.reports_decorator import report
 
+
 @report(filename=os.path.join(ROOT_DIR, r"data/test_exec.txt"))
 def normal_exec_file(name: str) -> str:
     return "Hello " + name
