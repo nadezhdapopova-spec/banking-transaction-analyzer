@@ -27,6 +27,7 @@ def test_get_spending_by_category(mock_get_date_information: Any, mock_get_spend
     )
 
     expected_result = {
+        "category": "Связь",
         "spending": 2300.0
     }
 
@@ -101,6 +102,7 @@ def test_get_spending_by_date_category(filtered_transactions: pd.DataFrame) -> N
     result = get_spending_by_date_category(filtered_transactions, category, start_date, end_date)
 
     expected = {
+        "category": "Детские товары",
         "spending": 400.0
     }
 

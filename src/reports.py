@@ -65,6 +65,7 @@ def get_spending_by_date_category(transactions_df: pd.DataFrame,
         reports_logger.info("Получены траты по заданной дате и категории")
 
         spending_by_date_category = {
+            "category": category,
             "spending": abs(total_spends)
         }
 
