@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+from src.logging_config import src_utils_logger
+
 
 def get_information_home_page(date_str: str,
                               transactions: pd.DataFrame,
@@ -24,6 +26,7 @@ def get_information_home_page(date_str: str,
         "stock_prices": stock_prices
     }
     parsed_result = json.dumps(result_dict, indent=4, ensure_ascii=False)
+    src_utils_logger.info("Python-объект преобразован в JSON-строку для страницы 'Главная'")
 
     return parsed_result
 
@@ -60,6 +63,8 @@ def get_events_information(date_str: str,
     }
 
     parsed_result = json.dumps(result, indent=4, ensure_ascii=False)
+    src_utils_logger.info("Python-объект преобразован в JSON-строку для страницы 'События'")
+
     return parsed_result
 
 
@@ -67,6 +72,7 @@ def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[date
     """Возвращает начальную и конечную даты для фильтрации транзакций."""
     try:
         date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        src_utils_logger.info(f"Дата {date_str} преобразована в объект datetime")
         end_date = date_obj + timedelta(days=1)
 
         if data_range == "W":
@@ -82,6 +88,7 @@ def get_date_obj_information(date_str: str, data_range: str = "M") -> tuple[date
         return date_obj, start_date, end_date
 
     except ValueError as e:
+        src_utils_logger.error(f"Некорректный формат даты {date_str}")
         raise ValueError(f"Некорректный формат даты: {e}")
 
 
@@ -109,9 +116,11 @@ def filter_transactions(transactions_df: pd.DataFrame,
             filtered_transactions = transactions_df[(transactions_df["Дата операции"] >= start_date) &
                                                     (transactions_df["Дата операции"] < end_date)]
 
+        src_utils_logger.info("Транзакции отфильтрованы по дате")
         return filtered_transactions
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка фильтрации транзакций по дате: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -119,6 +128,7 @@ def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает общую сумму расходов, кешбэк по каждой карте."""
     try:
         result = transactions_df.groupby("Номер карты").agg({"Сумма операции": "sum", "Кэшбэк": "sum"})
+        src_utils_logger.info("Получены сумма расходов, кешбэк по каждой карте")
 
         result_dict = result.to_dict(orient="index")
 
@@ -133,6 +143,7 @@ def get_card_spent_cashback(transactions_df: pd.DataFrame) -> list[dict]:
         return cards_info
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении данных по каждой карте: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -140,6 +151,7 @@ def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
     """Возвращает топ-5 транзакций по сумме платежа."""
     try:
         top_transactions = transactions_df.sort_values("Сумма операции с округлением", ascending=False).head(5)
+        src_utils_logger.info("Транзакции отсортированы по сумме платежа")
 
         top_transactions_dict = top_transactions.to_dict(orient="index")
 
@@ -155,6 +167,7 @@ def get_top_five_transactions(transactions_df: pd.DataFrame) -> list[dict]:
         return top_five_transactions
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при сортировке транзакций по сумме платежа: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -162,12 +175,14 @@ def get_total_expenses(transactions_df: pd.DataFrame) -> dict:
     """Возвращает общую сумму расходов."""
     try:
         total_amount = transactions_df[transactions_df["Сумма операции"] < 0]["Сумма операции"].sum()
+        src_utils_logger.info("Получена сумма расходов")
 
         total_expenses = {"total_amount": abs(int(round(float(total_amount), 0)))}
 
         return total_expenses
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении суммы расходов: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -175,12 +190,14 @@ def get_total_income(transactions_df: pd.DataFrame) -> dict:
     """Возвращает общую сумму поступлений."""
     try:
         total_amount = transactions_df[transactions_df["Сумма операции"] > 0]["Сумма операции"].sum()
+        src_utils_logger.info("Получена сумма поступлений")
 
         total_income = {"total_amount": int(round(float(total_amount), 0))}
 
         return total_income
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении суммы поступлений: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -189,6 +206,7 @@ def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
     try:
         result = transactions_df.groupby("Категория")["Сумма операции"].sum().loc[lambda x: x < 0].sort_values()
         other_category = result.iloc[7:].sum()
+        src_utils_logger.info("Получена сумма расходов по категориям")
 
         result_list = result.reset_index().to_dict(orient="records")
         categories = [item for item in result_list[:7]]
@@ -204,6 +222,7 @@ def get_top_categories_expenses(transactions_df: pd.DataFrame) -> list[dict]:
         return categories
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении суммы расходов по категориям: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -212,6 +231,7 @@ def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
     try:
         result = (transactions_df[transactions_df["Сумма операции"] > 0].
                   groupby("Категория")["Сумма операции"].sum().sort_values(ascending=False))
+        src_utils_logger.info("Получена сумма поступлений по категориям")
 
         categories = result.reset_index().to_dict(orient="records")
 
@@ -223,6 +243,7 @@ def get_top_categories_income(transactions_df: pd.DataFrame) -> list[dict]:
         return categories
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении суммы поступлений по категориям: {e}")
         raise KeyError(f"Ошибка: {e}")
 
 
@@ -232,6 +253,7 @@ def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]
         transfers_and_cash = (transactions_df[transactions_df["Категория"].isin(["Переводы", "Наличные"]) &
                                               (transactions_df["Сумма операции"] < 0)].
                               groupby("Категория")["Сумма операции"].sum().sort_values())
+        src_utils_logger.info("Получена сумма расходов по категориям 'Наличные' и 'Переводы'")
 
         if "Переводы" not in transfers_and_cash:
             transfers_and_cash.loc["Переводы"] = 0
@@ -248,4 +270,5 @@ def get_transfers_and_cash_expenses(transactions_df: pd.DataFrame) -> list[dict]
         return transfers_and_cash_list
 
     except KeyError as e:
+        src_utils_logger.error(f"Ошибка при получении данных по категориям 'Наличные' и 'Переводы': {e}")
         raise KeyError(f"Ошибка: {e}")
