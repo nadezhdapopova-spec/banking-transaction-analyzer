@@ -6,22 +6,19 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
-from pandas import Timestamp
 
-from src.reports import get_date_information, get_filtered_transactions, get_spending_by_category
+from src.reports import get_date_information, get_spending_by_category, get_spending_by_date_category
 
 
-@patch("src.reports.get_filtered_transactions")
+@patch("src.reports.get_spending_by_date_category")
 @patch("src.reports.get_date_information")
-def test_get_spending_by_category(mock_get_date_information: Any, mock_filter_transactions: Any) -> None:
+def test_get_spending_by_category(mock_get_date_information: Any, mock_get_spending: Any) -> None:
     date_str = "2023-11-01 12:00:00"
     category = "Связь"
     transactions = pd.DataFrame({
-        "Дата операции": ["2023-11-01 12:00:00", "2023-10-30 12:00:00"],
-        "Сумма": [1000, 2000],
-        "Категория": ["Дом и ремонт", "Связь"],
-        "Кэшбэк": [0, 20],
-        "MCC": [5200, 7379]
+        "Дата операции": ["2023-11-01 12:00:00", "2023-10-30 12:00:00", "2023-09-30 12:00:00"],
+        "Сумма": [1000, -2000, -300],
+        "Категория": ["Дом и ремонт", "Связь", "Связь"]
     })
 
     mock_get_date_information.return_value = (
@@ -29,8 +26,12 @@ def test_get_spending_by_category(mock_get_date_information: Any, mock_filter_tr
         pd.Timestamp("2023-11-02 12:00:00")
     )
 
-    mock_filter_transactions.return_value = transactions
-    expected_result = transactions.to_dict(orient="records")
+    expected_result = {
+        "category": "Связь",
+        "spending": 2300.0
+    }
+
+    mock_get_spending.return_value = expected_result
     expected_result_json = json.dumps(expected_result, ensure_ascii=False, indent=4)
 
     result = get_spending_by_category(transactions, category, date_str)
@@ -38,9 +39,9 @@ def test_get_spending_by_category(mock_get_date_information: Any, mock_filter_tr
     assert result == expected_result_json
 
 
-@patch("src.reports.get_filtered_transactions")
+@patch("src.reports.get_spending_by_date_category")
 @patch("src.reports.get_date_information")
-def test_get_spending_by_category_invalid(mock_get_date_information: Any, mock_filter_transactions: Any) -> None:
+def test_get_spending_by_category_invalid(mock_get_date_information: Any, mock_get_spending: Any) -> None:
     date_str = "2023-11-01 12:00:00"
     category = "Связь"
 
@@ -49,7 +50,7 @@ def test_get_spending_by_category_invalid(mock_get_date_information: Any, mock_f
         pd.Timestamp("2023-11-02 12:00:00")
     )
 
-    mock_filter_transactions.side_effect = KeyError()
+    mock_get_spending.side_effect = KeyError()
 
     transactions = pd.DataFrame({
         "Дата операции": ["2023-11-01 12:00:00", "2023-10-30 12:00:00"],
@@ -93,24 +94,19 @@ def test_get_date_information_invalid() -> None:
         get_date_information("2023-12-31T02:26:18.671407")
 
 
-def test_get_filtered_transactions(filtered_transactions: pd.DataFrame) -> None:
+def test_get_spending_by_date_category(filtered_transactions: pd.DataFrame) -> None:
     start_date = datetime(2023, 1, 1, 22, 39, 4)
     end_date = datetime(2023, 3, 15, 22, 39, 4)
     category = "Детские товары"
 
-    result = get_filtered_transactions(filtered_transactions, category, start_date, end_date)
+    result = get_spending_by_date_category(filtered_transactions, category, start_date, end_date)
 
-    expected = [
-        {"Дата операции": Timestamp('2023-02-04 00:00:00'),
-         "Номер карты": "*7197",
-         "Сумма операции": -400.0,
-         "Кэшбэк": 0,
-         "Сумма операции с округлением": 400,
-         "Категория": "Детские товары",
-         "Описание": "Детский Мир"}
-    ]
+    expected = {
+        "category": "Детские товары",
+        "spending": 400.0
+    }
 
-    assert result.to_dict(orient="records") == expected
+    assert result == expected
 
 
 def test_get_filtered_transactions_invalid(filtered_transactions_invalid: pd.DataFrame) -> None:
@@ -119,4 +115,4 @@ def test_get_filtered_transactions_invalid(filtered_transactions_invalid: pd.Dat
     category = "Детские товары"
 
     with pytest.raises(KeyError):
-        get_filtered_transactions(filtered_transactions_invalid, category, start_date, end_date)
+        get_spending_by_date_category(filtered_transactions_invalid, category, start_date, end_date)

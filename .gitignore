@@ -180,3 +180,5 @@ cython_debug/
 data/report.txt
 data/reports.txt
 data/test_exec.txt
+
+logs/*
