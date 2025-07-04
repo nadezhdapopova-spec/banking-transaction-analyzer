@@ -25,7 +25,7 @@ external_api_logger.setLevel(logging.DEBUG)
 
 src_utils_logger = logging.getLogger("src_utils_logger")
 src_utils_handler = logging.FileHandler(os.path.join(ROOT_DIR, "logs", "src_utils.log"),
-                                           "w", encoding="utf-8")
+                                        "w", encoding="utf-8")
 src_utils_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                                         datefmt="%Y-%m-%d %H:%M:%S")
 src_utils_handler.setFormatter(src_utils_formatter)
@@ -37,7 +37,7 @@ services_logger = logging.getLogger("services_logger")
 services_handler = logging.FileHandler(os.path.join(ROOT_DIR, "logs", "services.log"),
                                        "w", encoding="utf-8")
 services_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
-                                        datefmt="%Y-%m-%d %H:%M:%S")
+                                       datefmt="%Y-%m-%d %H:%M:%S")
 services_handler.setFormatter(services_formatter)
 services_logger.addHandler(services_handler)
 services_logger.setLevel(logging.DEBUG)
@@ -47,7 +47,7 @@ reports_logger = logging.getLogger("reports_logger")
 reports_handler = logging.FileHandler(os.path.join(ROOT_DIR, "logs", "reports.log"),
                                       "w", encoding="utf-8")
 reports_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
-                                       datefmt="%Y-%m-%d %H:%M:%S")
+                                      datefmt="%Y-%m-%d %H:%M:%S")
 reports_handler.setFormatter(reports_formatter)
 reports_logger.addHandler(reports_handler)
 reports_logger.setLevel(logging.DEBUG)

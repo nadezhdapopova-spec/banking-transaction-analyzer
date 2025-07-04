@@ -17,6 +17,7 @@ def test_get_spending_by_category(mock_get_date_information: Any, mock_filter_tr
     date_str = "2023-11-01 12:00:00"
     category = "Связь"
     transactions = pd.DataFrame({
+        "Номер карты": [None, None],
         "Дата операции": ["2023-11-01 12:00:00", "2023-10-30 12:00:00"],
         "Сумма": [1000, 2000],
         "Категория": ["Дом и ремонт", "Связь"],

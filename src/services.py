@@ -90,10 +90,10 @@ def search_for_transfers_to_individuals(data: list[dict]) -> str:
             item["Кэшбэк"] = 0 if pd.isna(item.get("Кэшбэк")) else item["Кэшбэк"]
             item["MCC"] = None if pd.isna(item.get("MCC")) else item["MCC"]
 
-        transfers_to_individuals = json.dumps(transfers_to_individuals, ensure_ascii=False, indent=4, default=str)
+        transfers_to_individuals_json = json.dumps(transfers_to_individuals, ensure_ascii=False, indent=4, default=str)
         services_logger.info("Данные о переводах физлицам преобразованы в JSON-строку")
 
-        return transfers_to_individuals
+        return transfers_to_individuals_json
 
     except KeyError as e:
         services_logger.error(f"Ошибка фильтрации транзакций: {e}")
