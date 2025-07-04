@@ -1,7 +1,10 @@
 import logging
 import os.path
+from pathlib import Path
 
 from config import ROOT_DIR
+
+Path(os.path.join(ROOT_DIR, "logs")).mkdir(parents=True, exist_ok=True)
 
 read_xlsx_logger = logging.getLogger("read_xlsx_logger")
 read_xlsx_handler = logging.FileHandler(os.path.join(ROOT_DIR, "logs", "read_xlsx.log"),
