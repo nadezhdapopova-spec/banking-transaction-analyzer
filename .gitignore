@@ -40,8 +40,8 @@ pip-delete-this-directory.txt
 #htmlcov/
 #.tox/
 #.nox/
-.coverage
-.coverage.*
+#.coverage
+#.coverage.
 #.cache
 #nosetests.xml
 #coverage.xml
@@ -174,3 +174,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+~$*.xlsx
+
+data/report.txt
+data/reports.txt
+data/test_exec.txt
+
+logs/*
